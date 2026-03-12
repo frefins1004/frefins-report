@@ -590,13 +590,13 @@ body{font-family:'Pretendard',sans-serif;background:var(--bg);color:var(--t1);he
 //  프로젝트 설정 > 일반 > 내 앱 > SDK 설정 및 구성
 // ══════════════════════════════════════
 var firebaseConfig = {
-  apiKey:            "YOUR_API_KEY",
-  authDomain:        "YOUR_PROJECT_ID.firebaseapp.com",
-  databaseURL:       "https://YOUR_PROJECT_ID-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId:         "YOUR_PROJECT_ID",
-  storageBucket:     "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId:             "YOUR_APP_ID"
+  apiKey:            "AIzaSyDzHL7XqZ3nGiaW9dxEcc7r6ekFfn0YEuA",
+  authDomain:        "frefins.firebaseapp.com",
+  databaseURL:       "https://frefins-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId:         "frefins",
+  storageBucket:     "frefins.appspot.com",
+  messagingSenderId: "361667907086",
+  appId:             "1:361667907086:web:8f5de3d7e7641103f0b65f"
 };
 
 // Firebase 초기화
@@ -2205,7 +2205,7 @@ function kpiClear() {
   rwRenderSelector();
   // Firebase 연동 시작
   // Firebase 설정 확인
-  if(firebaseConfig.apiKey === 'YOUR_API_KEY') {
+  if(firebaseConfig.apiKey === 'AIzaSyDzHL7XqZ3nGiaW9dxEcc7r6ekFfn0YEuA') {
     document.getElementById('fb-banner').style.display='flex';
     document.getElementById('conn-dot').style.background='#f59e0b';
     document.getElementById('conn-txt').textContent='로컬 모드';
