@@ -594,7 +594,7 @@ var firebaseConfig = {
   authDomain:        "frefins.firebaseapp.com",
   databaseURL:       "https://frefins-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId:         "frefins",
-  storageBucket:     "frefins.appspot.com",
+  storageBucket:     "frefins.firebasestorage.app",
   messagingSenderId: "361667907086",
   appId:             "1:361667907086:web:8f5de3d7e7641103f0b65f"
 };
@@ -2205,7 +2205,7 @@ function kpiClear() {
   rwRenderSelector();
   // Firebase 연동 시작
   // Firebase 설정 확인
-  if(firebaseConfig.apiKey === 'AIzaSyDzHL7XqZ3nGiaW9dxEcc7r6ekFfn0YEuA') {
+  if(firebaseConfig.apiKey === 'YOUR_API_KEY_PLACEHOLDER') {
     document.getElementById('fb-banner').style.display='flex';
     document.getElementById('conn-dot').style.background='#f59e0b';
     document.getElementById('conn-txt').textContent='로컬 모드';
