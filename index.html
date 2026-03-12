@@ -328,12 +328,30 @@ body{font-family:'Pretendard',sans-serif;background:var(--bg);color:var(--t1);he
 .co-swatch:hover,.co-swatch.sel{border-color:#fff;box-shadow:0 0 0 2px currentColor}
 ::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:99px}
 
+
+/* ===== 모바일 반응형 ===== */
+.hamburger { display:none; position:fixed; top:12px; left:12px; z-index:1001; background:var(--blue); border:none; border-radius:8px; padding:8px 10px; cursor:pointer; flex-direction:column; gap:5px; }
+.hamburger span { display:block; width:20px; height:2px; background:#fff; border-radius:2px; transition:.3s; }
+.sb-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:999; }
+@media(max-width:768px){
+  .hamburger { display:flex; }
+  .sb { transform:translateX(-100%); transition:.3s; z-index:1000; }
+  .sb.open { transform:translateX(0); }
+  .sb-overlay.open { display:block; }
+  .app { padding-left:0 !important; }
+  .main { padding:12px 8px !important; }
+  .pg { padding:12px !important; }
+}
 </style>
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 </head>
 <body>
+<button class="hamburger" id="hamburger-btn" onclick="toggleSidebar()" aria-label="메뉴">
+  <span></span><span></span><span></span>
+</button>
+<div class="sb-overlay" id="sb-overlay" onclick="toggleSidebar()"></div>
 
 <!-- Firebase 미설정 안내 배너 -->
 <div id="fb-banner" style="display:none !important;position:fixed;top:0;left:0;right:0;z-index:9999;background:#1e40af;color:#fff;padding:10px 20px;font-size:12px;display:flex;align-items:center;gap:12px;box-shadow:0 2px 8px rgba(0,0,0,.3)">
@@ -610,6 +628,7 @@ var DB = {
   orgs:       db.ref('frefins/orgs'),
   sorgs:      db.ref('frefins/sorgs'),
   extraGroups:db.ref('frefins/extraGroups'),
+  kpi:        db.ref('frefins/kpi'),
 };
 
 // ── 연결 상태 표시 ──
@@ -628,6 +647,11 @@ function fbListen() {
   DB.reports.on('value', function(snap) {
     allReports = [];
     snap.forEach(function(child) { allReports.push(child.val()); });
+    // ID 충돌 방지
+    if(allReports.length > 0) {
+      var maxRptId = Math.max.apply(null, allReports.map(function(r){return r.id||0;}));
+      if(maxRptId >= rptNextId) rptNextId = maxRptId + 1;
+    }
     document.getElementById('nb-rpt').textContent = allReports.length;
     // 현재 보고서 관련 페이지면 자동 갱신
     var activePage = document.querySelector('.page.on');
@@ -671,6 +695,21 @@ function fbListen() {
     SF_EXTRA_GROUPS = [];
     snap.forEach(function(child) { SF_EXTRA_GROUPS.push(child.val()); });
   });
+  // KPI 데이터 실시간 동기화
+  DB.kpi.on('value', function(snap) {
+    if(snap.exists()) {
+      var d = snap.val();
+      if(d.KT) KT = d.KT;
+      if(d.KA) KA = d.KA;
+      var activePage = document.querySelector('.page.on');
+      if(activePage) {
+        var pid = activePage.id.replace('page-','');
+        if(pid==='kpi-db') renderKpiDb();
+        if(pid==='kpi-in') renderKpiIn();
+        if(pid==='dashboard') renderDashboard();
+      }
+    }
+  });
 }
 
 // ── 초기 데이터 Firebase에 업로드 (최초 1회) ──
@@ -694,6 +733,12 @@ function fbSeedIfEmpty() {
       var mMap = {};
       milestones.forEach(function(m){ mMap['ms_'+m.id] = m; });
       DB.milestones.set(mMap);
+    }
+  });
+  // KPI 초기 데이터
+  DB.kpi.once('value', function(snap) {
+    if(!snap.exists()) {
+      DB.kpi.set({ KT: KT, KA: KA });
     }
   });
 }
@@ -898,6 +943,8 @@ var PAGES = {
 };
 
 function go(p, el) {
+  // 모바일에서 메뉴 선택시 사이드바 닫기
+  if(window.innerWidth<=768){var sb=document.querySelector('.sb');var ov=document.getElementById('sb-overlay');if(sb)sb.classList.remove('open');if(ov)ov.classList.remove('open');}
   document.querySelectorAll('.page').forEach(function(x){x.classList.remove('on');});
   document.querySelectorAll('.ni').forEach(function(x){x.classList.remove('on');});
   var pg = document.getElementById('page-'+p);
@@ -1211,7 +1258,15 @@ function rwPick(key) {
   rwRenderSelector();
   rwBuildForm(key);
   document.getElementById('rw-form').style.display='block';
-  setTimeout(function(){document.getElementById('rw-form').scrollIntoView({behavior:'smooth',block:'start'});},100);
+  setTimeout
+function toggleSidebar() {
+  var sb = document.querySelector('.sb');
+  var overlay = document.getElementById('sb-overlay');
+  sb.classList.toggle('open');
+  overlay.classList.toggle('open');
+}
+
+(function(){document.getElementById('rw-form').scrollIntoView({behavior:'smooth',block:'start'});},100);
 }
 
 function rwBuildForm(key) {
@@ -1231,6 +1286,11 @@ function rwBuildForm(key) {
   h += '</div><input type="hidden" id="f-worktype" value="내근"></div>';
   h += '<div class="fg"><label class="fl">소속</label><input class="fi" value="'+Q(p.orgName)+'" readonly></div>';
   h += '<div class="fg"><label class="fl">직책</label><input class="fi" value="'+Q(p.role)+'" readonly></div>';
+  h += '</div>';
+  h += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:10px">';
+  h += '<div class="fg"><label class="fl">기본근무시간</label><input class="fi" id="f-work-basic" placeholder="예: 09:00~18:00"></div>';
+  h += '<div class="fg"><label class="fl">연장근무시간</label><input class="fi" id="f-work-extra" placeholder="예: 18:00~22:00"></div>';
+  h += '<div class="fg"><label class="fl">연장근무 휴게시간</label><select class="fi" id="f-work-break"><option value="">-</option><option value="30분">30분</option><option value="1시간">1시간</option></select></div>';
   h += '</div></div></div>';
 
   // 핵심 요약
@@ -1353,6 +1413,9 @@ function rwSave() {
     personName: p.personName, role: p.role, color: p.color,
     date: document.getElementById('f-date').value || kpiToday(),
     worktype: document.getElementById('f-worktype').value || '내근',
+    workBasic: document.getElementById('f-work-basic').value||'',
+    workExtra: document.getElementById('f-work-extra').value||'',
+    workBreak: document.getElementById('f-work-break').value||'',
     summary: sum,
     risk: document.getElementById('f-risk').value||'',
     decision: document.getElementById('f-dec').value||'',
@@ -1514,7 +1577,7 @@ function viewReport(id) {
   h+='<div class="rv-hd" style="background:linear-gradient(135deg,'+c+'dd,'+c+'88)">';
   h+='<div class="rv-hd-top"><div class="rv-av" style="background:rgba(255,255,255,.2)">'+r.personName[0]+'</div>';
   h+='<div><div style="font-size:16px;font-weight:900">'+r.personName+' '+r.role+(r.isExec?' <span style="background:rgba(255,255,255,.25);padding:1px 8px;border-radius:99px;font-size:10px">임원</span>':'')+'</div>';
-  h+='<div style="font-size:11px;opacity:.65;margin-top:2px">'+r.orgName+' · '+r.groupName+' · '+r.date+' <span style="background:rgba(255,255,255,.25);padding:2px 8px;border-radius:99px;font-size:10px;font-weight:700">'+r.worktype+'</span></div></div></div>';
+  h+='<div style="font-size:11px;opacity:.65;margin-top:2px">'+r.orgName+' · '+r.groupName+' · '+r.date+' <span style="background:rgba(255,255,255,.25);padding:2px 8px;border-radius:99px;font-size:10px;font-weight:700">'+r.worktype+'</span>'+(r.workBasic?'<span style="background:rgba(255,255,255,.2);padding:2px 8px;border-radius:99px;font-size:10px;margin-left:4px">⏰ '+r.workBasic+(r.workExtra?'~'+r.workExtra:'')+(r.workBreak?'(휴게 '+r.workBreak+')':'')+' </span>':'')+'</div></div></div>';
   h+='<div class="rv-sg">';
   h+='<div class="rv-si"><div class="rv-sl">핵심 성과</div><div class="rv-sv" style="font-size:10px">'+r.summary.substring(0,28)+'</div></div>';
   h+='<div class="rv-si"><div class="rv-sl">리스크</div><div class="rv-sv" style="font-size:10px">'+(r.risk||'—').substring(0,22)+'</div></div>';
@@ -2182,6 +2245,9 @@ function kpiClear() {
   var keys = Object.keys(KA);
   for (var ki = 0; ki < keys.length; ki++) KA[keys[ki]][kpiInM] = null;
   renderKpiIn();
+  if(typeof DB !== 'undefined' && DB.kpi) {
+    DB.kpi.set({ KT: KT, KA: KA });
+  }
 }
 
 // ══════════════════════════════════════
