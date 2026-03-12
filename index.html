@@ -336,7 +336,7 @@ body{font-family:'Pretendard',sans-serif;background:var(--bg);color:var(--t1);he
 <body>
 
 <!-- Firebase 미설정 안내 배너 -->
-<div id="fb-banner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:9999;background:#1e40af;color:#fff;padding:10px 20px;font-size:12px;display:flex;align-items:center;gap:12px;box-shadow:0 2px 8px rgba(0,0,0,.3)">
+<div id="fb-banner" style="display:none !important;position:fixed;top:0;left:0;right:0;z-index:9999;background:#1e40af;color:#fff;padding:10px 20px;font-size:12px;display:flex;align-items:center;gap:12px;box-shadow:0 2px 8px rgba(0,0,0,.3)">
   <span style="font-size:16px">🔧</span>
   <span><b>Firebase 미설정:</b> firebaseConfig의 <code style="background:rgba(255,255,255,.2);padding:1px 5px;border-radius:3px">YOUR_API_KEY</code> 등을 실제 값으로 교체하세요. 현재는 로컬 모드로 동작합니다.</span>
   <a href="https://console.firebase.google.com" target="_blank" style="color:#93c5fd;margin-left:auto;white-space:nowrap">Firebase 콘솔 열기 →</a>
@@ -2206,7 +2206,7 @@ function kpiClear() {
   // Firebase 연동 시작
   // Firebase 설정 확인
   if(firebaseConfig.apiKey === 'YOUR_API_KEY_PLACEHOLDER') {
-    document.getElementById('fb-banner').style.display='flex';
+    // document.getElementById('fb-banner').style.display='flex';
     document.getElementById('conn-dot').style.background='#f59e0b';
     document.getElementById('conn-txt').textContent='로컬 모드';
   } else {
