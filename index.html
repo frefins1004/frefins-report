@@ -545,6 +545,7 @@ body{font-family:'Pretendard',sans-serif;background:var(--bg);color:var(--t1);he
   <div class="fg"><label class="fl">목표 완료일</label><input type="text" class="fi" id="ms-due" placeholder="예: 3/31"></div>
   <div class="fg"><label class="fl">진행률 (%)</label><input type="number" class="fi" id="ms-prog" min="0" max="100" value="0"></div>
   <div class="fg" style="grid-column:1/-1"><label class="fl">비고</label><textarea class="ft sh" id="ms-note" placeholder="추가 메모"></textarea></div>
+  <div class="fg" style="grid-column:1/-1"><label class="fl">업무수행결과</label><textarea class="ft sh" id="ms-result" placeholder="업무 수행 결과를 입력하세요"></textarea></div>
 </div></div>
 <div class="mod-f"><button class="btn btn-o" onclick="closeMo('ms-mo')">취소</button><button class="btn btn-p" onclick="saveMs()">저장</button></div>
 </div></div>
@@ -1171,6 +1172,7 @@ function openMsModal() {
   document.getElementById('ms-due').value='';
   document.getElementById('ms-prog').value=0;
   document.getElementById('ms-note').value='';
+  document.getElementById('ms-result').value='';
   document.getElementById('ms-mo').classList.add('on');
 }
 function editMs(id) {
@@ -1185,6 +1187,7 @@ function editMs(id) {
   document.getElementById('ms-due').value=m.due||'';
   document.getElementById('ms-prog').value=m.prog;
   document.getElementById('ms-note').value=m.detail||'';
+  document.getElementById('ms-result').value=m.result||'';
   document.getElementById('ms-mo').classList.add('on');
 }
 function saveMs() {
@@ -1200,6 +1203,7 @@ function saveMs() {
     due:document.getElementById('ms-due').value,
     prog:parseInt(document.getElementById('ms-prog').value)||0,
     detail:document.getElementById('ms-note').value,
+    result:document.getElementById('ms-result').value,
   };
   if(msEditId){milestones[milestones.findIndex(m=>m.id===msEditId)]=data;fbSaveMs(data);}
   else{milestones.push(data);fbSaveMs(data);}
