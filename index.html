@@ -1525,7 +1525,7 @@ function rwBuildForm(key) {
         var inputs = last.querySelectorAll('input,select,textarea');
         if(inputs[0]) inputs[0].value = row.cat||'';
         if(inputs[1]) inputs[1].value = row.content||'';
-        if(inputs[2]) inputs[2].value = '';
+        if(inputs[2]) inputs[2].value = row.target||''; // 어제 목표 → 오늘 결과/성과로 자동 이동
       });
     }
     // 안내 배너 표시
