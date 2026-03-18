@@ -290,11 +290,11 @@ body{font-family:'Pretendard',sans-serif;background:var(--bg);color:var(--t1);he
 ::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:99px}
 
 .rep-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;padding:14px 16px}
-.rep-card{border:1.5px solid var(--bd);border-radius:9px;padding:11px 12px;cursor:pointer;transition:all .15s;background:#fff}
+.rep-card{border:1.5px solid var(--bd);border-radius:9px;padding:10px 14px;cursor:pointer;transition:all .15s;background:#fff;display:flex;align-items:center;gap:12px}
 .rep-card:hover{border-color:#0e7490;box-shadow:0 2px 8px rgba(14,116,144,.12)}
 .rep-card.sel{border-color:#0e7490;background:#e6f7fa;box-shadow:0 0 0 3px rgba(14,116,144,.13)}
-.rep-av{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#fff;margin-bottom:7px}
-.rep-name{font-size:12px;font-weight:700;color:var(--navy)}.rep-role{font-size:10px;color:var(--t3);margin-top:1px}
+.rep-av{width:36px;height:36px;flex-shrink:0;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#fff;margin-bottom:7px}
+.rep-name{font-size:12px;font-weight:700;color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.rep-role{font-size:10px;color:var(--t3);margin-top:1px}
 .team-sec{margin-bottom:2px}
 .team-lbl{font-size:10px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:1.2px;padding:6px 14px;background:var(--s2);border-top:1px solid var(--bd);border-bottom:1px solid var(--bd)}
 .ov-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin-bottom:16px}
@@ -316,7 +316,7 @@ body{font-family:'Pretendard',sans-serif;background:var(--bg);color:var(--t1);he
 .rep-card:hover{border-color:#0e7490;box-shadow:0 2px 8px rgba(14,116,144,.12)}
 .rep-card.sel{border-color:#0e7490;background:#e6f7fa;box-shadow:0 0 0 3px rgba(14,116,144,.13)}
 .rep-av{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:#fff;margin-bottom:6px}
-.rep-name{font-size:12px;font-weight:700;color:var(--navy)}.rep-role{font-size:10px;color:var(--t3);margin-top:1px}
+.rep-name{font-size:12px;font-weight:700;color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.rep-role{font-size:10px;color:var(--t3);margin-top:1px}
 .team-sec{margin-bottom:2px}
 .team-lbl{font-size:10px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:1.2px;padding:5px 14px;background:var(--s2);border-top:1px solid var(--bd);border-bottom:1px solid var(--bd)}
 .ov-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin-bottom:16px}
@@ -417,6 +417,7 @@ body{font-family:'Pretendard',sans-serif;background:var(--bg);color:var(--t1);he
       <div class="sb-lbl">일일 보고</div>
       <div class="ni" onclick="go('rpt-write',this)"><span class="ni-ico">✏️</span>보고서 작성</div>
       <div class="ni" onclick="go('rpt-status',this)"><span class="ni-ico">📊</span>제출 현황<span class="ni-badge" id="nb-rpt">0</span></div>
+      <div class="ni" onclick="go('rpt-leave',this)"><span class="ni-ico">🌴</span>연차·휴가</div>
       <div class="ni" onclick="go('rpt-hist',this)"><span class="ni-ico">🗂️</span>보고 이력</div>
     </div>
     <div class="sb-sec">
@@ -509,6 +510,7 @@ body{font-family:'Pretendard',sans-serif;background:var(--bg);color:var(--t1);he
         <select class="fs" id="rs-group" style="width:140px;padding:5px 8px" onchange="renderStatus()"><option value="">전체</option></select>
       </div>
     </div>
+    <div id="rs-leave-banner"></div>
     <div class="ov-grid" id="rs-cards"></div>
     <div id="rs-body"></div>
   </div>
@@ -526,6 +528,44 @@ body{font-family:'Pretendard',sans-serif;background:var(--bg);color:var(--t1);he
       </div>
     </div>
     <div class="card"><div class="ch"><span class="ct">🗂️ 보고 이력</span><span id="rh-cnt" style="font-size:10px;color:var(--t3)"></span></div><div id="rh-list"></div></div>
+  </div>
+
+  <!-- 연차/휴가 -->
+  <div class="page" id="page-rpt-leave">
+    <div class="card" style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <div style="font-size:14px;font-weight:700;color:var(--navy)">🌴 연차·휴가 등록</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:10px;align-items:end" id="leave-form-row">
+        <div class="fg"><label class="fl">이름</label>
+          <select class="fi" id="lv-name"><option value="">-- 직원 선택 --</option></select>
+        </div>
+        <div class="fg"><label class="fl">유형</label>
+          <select class="fi" id="lv-type">
+            <option value="연차">연차</option>
+            <option value="반차(오전)">반차(오전)</option>
+            <option value="반차(오후)">반차(오후)</option>
+            <option value="병가">병가</option>
+            <option value="경조휴가">경조휴가</option>
+            <option value="기타">기타</option>
+          </select>
+        </div>
+        <div class="fg"><label class="fl">시작일</label><input class="fi" type="date" id="lv-start"></div>
+        <div class="fg"><label class="fl">종료일</label><input class="fi" type="date" id="lv-end"></div>
+        <button class="btn btn-p" onclick="leaveAdd()" style="height:38px;padding:0 18px">등록</button>
+      </div>
+      <div class="fg" style="margin-top:10px"><label class="fl">비고</label><input class="fi" id="lv-note" placeholder="사유 또는 메모"></div>
+    </div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div style="font-size:14px;font-weight:700;color:var(--navy)">📋 연차·휴가 현황</div>
+        <div style="display:flex;gap:8px">
+          <input class="fi" type="month" id="lv-filter-month" style="width:140px" oninput="renderLeave()">
+          <select class="fi" id="lv-filter-name" style="width:120px" onchange="renderLeave()"><option value="">전체 직원</option></select>
+        </div>
+      </div>
+      <div id="lv-list"></div>
+    </div>
   </div>
 
   <!-- KPI -->
@@ -664,6 +704,7 @@ var DB = {
   sorgs:      db.ref('frefins/sorgs'),
   extraGroups:db.ref('frefins/extraGroups'),
   kpi:        db.ref('frefins/kpi'),
+  leaves:     db.ref('frefins/leaves'),
 };
 
 // ── 연결 상태 표시 ──
@@ -735,6 +776,13 @@ function fbListen() {
     SF_EXTRA_GROUPS = [];
     snap.forEach(function(child) { SF_EXTRA_GROUPS.push(child.val()); });
   });
+  // 연차/휴가 데이터 실시간 동기화
+  DB.leaves.on('value', function(snap) {
+    allLeaves = [];
+    snap.forEach(function(child) { allLeaves.push(child.val()); });
+    var activePage = document.querySelector('.page.on');
+    if(activePage && activePage.id.replace('page-','') === 'rpt-status') renderStatus();
+  });
   // KPI 데이터 실시간 동기화
   DB.kpi.on('value', function(snap) {
     if(snap.exists()) {
@@ -792,7 +840,13 @@ function fbSeedIfEmpty() {
 
 // ── Firebase write 헬퍼 ──
 function fbSaveReport(r) {
-  DB.reports.child('rpt_'+r.id).set(r);
+  // 날짜+이름+타임스탬프로 고유 키 생성 (충돌 방지)
+  var safeDate = (r.date||'').replace(/-/g,'');
+  var safeName = (r.personName||'').replace(/[^a-zA-Z0-9가-힣]/g,'');
+  var ts = Date.now();
+  var key = 'rpt_' + safeDate + '_' + safeName + '_' + ts;
+  r._key = key;
+  DB.reports.child(key).set(r);
 }
 function fbSaveMs(m) {
   DB.milestones.child('ms_'+m.id).set(m);
@@ -815,6 +869,12 @@ function fbSaveExtraGroups() {
   var gMap = {};
   SF_EXTRA_GROUPS.forEach(function(g,i){ gMap['eg_'+i] = g; });
   DB.extraGroups.set(gMap);
+}
+function fbSaveLeave(lv) {
+  DB.leaves.child('lv_'+lv.id).set(lv);
+}
+function fbDelLeave(id) {
+  DB.leaves.child('lv_'+id).remove();
 }
 
 var milestones = [
@@ -930,7 +990,8 @@ var selectedColor = '#1d4ed8';
 var orgEditId = null;
 var sfGroupEditName = null;
 var sfTeamEditId = null;
-var rwSelId = null;   // 선택된 보고자 key: 임원='exec_rnd', 팀원='team_mgmt_김샛별'
+var rwSelId = null;
+var allLeaves = [];   // 선택된 보고자 key: 임원='exec_rnd', 팀원='team_mgmt_김샛별'
 var SF_PAL = ['#0d6e82','#1d4ed8','#047857','#6d28d9','#b45309','#b91c1c','#0e7490','#7c3aed','#0f766e','#334155'];
 
 
@@ -984,6 +1045,7 @@ var PAGES = {
   'rpt-write':   ['보고서 작성','구성원 선택 후 일일 활동 보고'],
   'rpt-status':  ['제출 현황','일자별 보고서 제출 현황'],
   'rpt-hist':    ['보고 이력','조직·기간별 보고서 이력 조회'],
+  'rpt-leave':   ['연차·휴가 관리','직원 연차·휴가 일정 등록 및 현황'],
   'kpi-db':      ['KPI 대시보드','전사 KPI 현황'],
   'kpi-in':      ['실적 입력','월별 KPI 실적 입력'],
   'settings':    ['조직도 관리','임원·팀·구성원 추가 수정 삭제'],
@@ -1008,6 +1070,7 @@ function go(p, el) {
     'rpt-write':  function(){rwRenderSelector();},
     'rpt-status': function(){document.getElementById('rs-date').value=kpiToday();rsPopGroups();renderStatus();},
     'rpt-hist':   function(){rhPopFilters();renderHist();},
+    'rpt-leave':  function(){renderLeave();},
     'kpi-db':     renderKpiDb,
     'kpi-in':     renderKpiIn,
     'settings':   function(){sTab('exec');},
@@ -1296,9 +1359,11 @@ function rwRenderSelector() {
       h+='<div class="rep-card'+(sel?' sel':'')+'" onclick="rwPick(\''+Q(p.key)+'\')">';
       h+=(p.isExec?'<div style="font-size:9px;font-weight:800;color:#fff;background:'+p.color+';border-radius:4px;padding:1px 5px;display:inline-block;margin-bottom:5px">임원</div><br>':'');
       h+='<div class="rep-av" style="background:'+p.color+'">'+p.name[0]+'</div>';
+      h+='<div style="min-width:0">';
       h+='<div class="rep-name">'+p.name+'</div>';
       h+='<div class="rep-role" style="color:'+p.color+';font-weight:600">'+p.role+'</div>';
-      h+='<div class="rep-role">'+p.org+'</div></div>';
+      h+='<div class="rep-role">'+p.org+'</div>';
+      h+='</div></div>';
     });
     h+='</div>';
   });
@@ -1397,6 +1462,92 @@ function rwBuildForm(key) {
 
   document.getElementById('rw-form').innerHTML = h;
   addRow('w-yest',3); addRow('w-tod',3); addRow('w-tom',3);
+
+  // ── 전일 보고 자동 불러오기 ──
+  var yesterday = new Date();
+  yesterday.setDate(yesterday.getDate()-1);
+  var ydate = yesterday.getFullYear()+'-'
+    +String(yesterday.getMonth()+1).padStart(2,'0')+'-'
+    +String(yesterday.getDate()).padStart(2,'0');
+  var prevReport = allReports
+    .filter(function(r){ return r.personName===p.personName && r.date===ydate; })
+    .sort(function(a,b){ return (b.id||0)-(a.id||0); })[0];
+  // ── 내일 연차 자동 표시 ──
+  var tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate()+1);
+  var tdate = tomorrow.getFullYear()+'-'
+    +String(tomorrow.getMonth()+1).padStart(2,'0')+'-'
+    +String(tomorrow.getDate()).padStart(2,'0');
+  var tmLeave = allLeaves.filter(function(lv){
+    return lv.name === p.personName && lv.start <= tdate && lv.end >= tdate;
+  })[0];
+  if(tmLeave) {
+    // 내일 업무란에 연차 자동 입력
+    var tomEl = document.getElementById('w-tom');
+    if(tomEl) {
+      tomEl.innerHTML = '';
+      addRow('w-tom',3);
+      var trows = tomEl.children;
+      var trow = trows[trows.length-1];
+      var tinputs = trow.querySelectorAll('input,select,textarea');
+      if(tinputs[0]) tinputs[0].value = tmLeave.type;
+      if(tinputs[1]) tinputs[1].value = '🌴 '+tmLeave.type+' ('+tdate+')';
+      if(tinputs[2]) tinputs[2].value = '-';
+    }
+    // 내일 연차 배너 표시
+    var leaveMsg = document.createElement('div');
+    leaveMsg.style.cssText = 'background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;padding:10px 14px;font-size:12px;color:#92400e;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;';
+    leaveMsg.innerHTML = '🌴 <b>내일('+tdate+')</b> '+tmLeave.type+' 일정이 있습니다. 내일 예정 업무에 자동 입력되었습니다.';
+    var _refBtn = document.createElement('button');
+    _refBtn.textContent = '🔄 다시 채우기';
+    _refBtn.style.cssText = 'background:#f59e0b;color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;margin-left:10px;font-weight:600';
+    (function(d,t){ _refBtn.addEventListener('click', function(){ fillLeaveRow(d,t); }); })(tdate, tmLeave.type);
+    leaveMsg.appendChild(_refBtn)
+    var formEl = document.getElementById('rw-form');
+    // 배너 삽입 위치: w-tom 섹션 앞
+    var tomSection = formEl.querySelector('#w-tom');
+    if(tomSection && tomSection.parentElement) {
+      tomSection.parentElement.parentElement.insertAdjacentElement('beforebegin', leaveMsg);
+    } else {
+      formEl.appendChild(leaveMsg);
+    }
+  }
+
+  if(prevReport) {
+    // 어제의 "오늘 업무" → 오늘의 "어제 업무"로 자동 채우기
+    if(prevReport.today && prevReport.today.length) {
+      var yestEl = document.getElementById('w-yest');
+      yestEl.innerHTML = '';
+      prevReport.today.forEach(function(row) {
+        addRow('w-yest',3);
+        var rows = yestEl.children;
+        var last = rows[rows.length-1];
+        var inputs = last.querySelectorAll('input,select,textarea');
+        if(inputs[0]) inputs[0].value = row.cat||'';
+        if(inputs[1]) inputs[1].value = row.content||'';
+        if(inputs[2]) inputs[2].value = '';
+      });
+    }
+    // 안내 배너 표시
+    var autoMsg = document.createElement('div');
+    autoMsg.style.cssText = 'background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px 14px;font-size:12px;color:#1d4ed8;margin-bottom:12px;';
+    autoMsg.innerHTML = '📋 <b>'+ydate+'</b> 전일 업무를 자동으로 불러왔습니다. 어제 업무란을 확인해주세요.';
+    var form = document.getElementById('rw-form');
+    form.insertBefore(autoMsg, form.firstChild);
+  }
+}
+
+function fillLeaveRow(date, type) {
+  var tomEl = document.getElementById('w-tom');
+  if(!tomEl) return;
+  tomEl.innerHTML = '';
+  addRow('w-tom',3);
+  var trows = tomEl.children;
+  var trow = trows[trows.length-1];
+  var tinputs = trow.querySelectorAll('input,select,textarea');
+  if(tinputs[0]) tinputs[0].value = type;
+  if(tinputs[1]) tinputs[1].value = '🌴 '+type+' ('+date+')';
+  if(tinputs[2]) tinputs[2].value = '-';
 }
 
 function setWorkType(t) {
@@ -1459,7 +1610,7 @@ function rwSave() {
   if(!sum){alert('핵심 성과를 입력해주세요');return;}
 
   var r = {
-    id: rptNextId++,
+    id: Date.now(),
     isExec: p.isExec,
     orgId: p.orgId, orgName: p.orgName, groupName: p.groupName,
     personName: p.personName, role: p.role, color: p.color,
@@ -1524,6 +1675,17 @@ function renderStatus() {
   var ch='';
   cards.forEach(function(s){ch+='<div class="ov-card" style="border-top-color:'+s.c+'"><div class="ov-lbl">'+s.l+'</div><div class="ov-val" style="color:'+s.c+'">'+s.v+'</div><div class="ov-sub">'+s.s+'</div></div>';});
   document.getElementById('rs-cards').innerHTML=ch;
+
+  // 오늘 연차/휴가자 표시
+  var todayLeaves = allLeaves.filter(function(lv){ return lv.start <= dt && lv.end >= dt; });
+  var leaveHtml = '';
+  if(todayLeaves.length) {
+    leaveHtml = '<div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:12px;">';
+    leaveHtml += '<b>🌴 오늘 연차·휴가:</b> ';
+    leaveHtml += todayLeaves.map(function(lv){ return '<span style="background:#fff;border-radius:6px;padding:2px 8px;margin:0 3px;border:1px solid #fcd34d">'+lv.name+' ('+lv.type+')</span>'; }).join('');
+    leaveHtml += '</div>';
+  }
+  document.getElementById('rs-leave-banner').innerHTML = leaveHtml;
 
   // 그룹별 테이블
   var groups=[];
@@ -1933,6 +2095,92 @@ function kBar(r) {
   var w = Math.min(r, 100);
   var col = rateColor(r);
   return '<div class="pb-wrap"><div class="pb"><div class="pb-fill" style="width:' + w + '%;background:' + col + '"></div></div></div>';
+}
+
+// ── 연차/휴가 ──
+function renderLeave() {
+  // 직원 선택 드롭다운 채우기 (매번 갱신)
+  var nameEl = document.getElementById('lv-name');
+  var filterEl = document.getElementById('lv-filter-name');
+  if(nameEl) {
+    var people = getAllPeople();
+    nameEl.innerHTML = '<option value="">-- 직원 선택 --</option>';
+    if(filterEl) filterEl.innerHTML = '<option value="">전체 직원</option>';
+    people.forEach(function(p) {
+      nameEl.innerHTML += '<option value="'+p.personName+'">'+p.personName+' ('+p.orgName+')</option>';
+      if(filterEl) filterEl.innerHTML += '<option value="'+p.personName+'">'+p.personName+'</option>';
+    });
+  }
+  // 오늘 날짜 기본값
+  var lvStart = document.getElementById('lv-start');
+  var lvEnd = document.getElementById('lv-end');
+  if(lvStart && !lvStart.value) { lvStart.value = kpiToday(); lvEnd.value = kpiToday(); }
+
+  // 필터
+  var fMonth = (document.getElementById('lv-filter-month')||{}).value || '';
+  var fName  = (document.getElementById('lv-filter-name')||{}).value  || '';
+  var data = allLeaves.filter(function(lv) {
+    if(fMonth && lv.start.slice(0,7) !== fMonth && lv.end.slice(0,7) !== fMonth) return false;
+    if(fName  && lv.name !== fName) return false;
+    return true;
+  }).sort(function(a,b){ return a.start < b.start ? 1 : -1; });
+
+  var el = document.getElementById('lv-list');
+  if(!data.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-ico">🌴</div><div>등록된 연차·휴가가 없습니다</div></div>';
+    return;
+  }
+  var TYPE_COLOR = {'연차':'tb','반차(오전)':'tg','반차(오후)':'tg','병가':'tr','경조휴가':'tp','기타':'ty'};
+  var h = '<table class="tbl"><thead><tr><th>이름</th><th>유형</th><th>시작일</th><th>종료일</th><th>소속</th><th>비고</th><th style="text-align:center">삭제</th></tr></thead><tbody>';
+  data.forEach(function(lv) {
+    var tc = TYPE_COLOR[lv.type]||'ty';
+    h += '<tr>';
+    h += '<td><b>'+lv.name+'</b></td>';
+    h += '<td><span class="tag '+tc+'">'+lv.type+'</span></td>';
+    h += '<td>'+lv.start+'</td>';
+    h += '<td>'+lv.end+'</td>';
+    h += '<td style="font-size:11px;color:var(--t3)">'+lv.orgName+'</td>';
+    h += '<td style="font-size:11px">'+( lv.note||'-')+'</td>';
+    h += '<td style="text-align:center"><button class="btn btn-d btn-sm" onclick="leaveDelete('+lv.id+')">삭제</button></td>';
+    h += '</tr>';
+  });
+  h += '</tbody></table>';
+  el.innerHTML = h;
+}
+
+function leaveAdd() {
+  var name  = document.getElementById('lv-name').value;
+  var type  = document.getElementById('lv-type').value;
+  var start = document.getElementById('lv-start').value;
+  var end   = document.getElementById('lv-end').value;
+  var note  = document.getElementById('lv-note').value;
+  if(!name)  { alert('직원을 선택해주세요'); return; }
+  if(!start) { alert('시작일을 입력해주세요'); return; }
+  if(!end)   { end = start; }
+  // 소속 찾기
+  var people = getAllPeople();
+  var person = people.find(function(p){ return p.personName===name; });
+  var lv = {
+    id: Date.now(),
+    name: name,
+    orgName: person ? person.orgName : '',
+    type: type,
+    start: start,
+    end: end,
+    note: note
+  };
+  allLeaves.push(lv);
+  fbSaveLeave(lv);
+  document.getElementById('lv-note').value = '';
+  renderLeave();
+  alert('✅ '+name+' '+type+' 등록되었습니다 ('+start+' ~ '+end+')');
+}
+
+function leaveDelete(id) {
+  if(!confirm('삭제하시겠습니까?')) return;
+  allLeaves = allLeaves.filter(function(lv){ return String(lv.id) !== String(id); });
+  fbDelLeave(id);
+  renderLeave();
 }
 
 // ── KPI DASHBOARD ──
