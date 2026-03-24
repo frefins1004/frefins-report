@@ -2123,16 +2123,35 @@ function renderDashboard() {
     <div class="sc c-y"><div class="sc-ico">🔄</div><div class="sc-lbl">진행중</div><div class="sc-val" style="color:var(--yellow)">${inp}</div><div class="sc-desc">${del}건 지연</div></div>
     <div class="sc c-p"><div class="sc-ico">📊</div><div class="sc-lbl">평균 진행률</div><div class="sc-val" style="color:var(--purple)">${avg}%</div><div class="sc-desc">전체 평균</div></div>
   `;
-  // org progress
+  // org progress - 연 누적 + 이번달 평균 + 완료/전체
+  const nowMonth = new Date().getMonth()+1;
   let oh='';
+  oh += `<div style="display:grid;grid-template-columns:100px 1fr 110px 110px;gap:6px;padding:6px 0 8px;border-bottom:2px solid var(--bd);font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px">
+    <span>조직</span><span>연 누적 진행률</span><span style="text-align:center">이번달 평균</span><span style="text-align:center">완료/전체</span>
+  </div>`;
   orgs.forEach(o=>{
-    const items=milestones.filter(m=>m.orgId===o.id);
-    if(!items.length)return;
-    const a=Math.round(items.reduce((s,m)=>s+m.prog,0)/items.length);
-    oh+=`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--bd)">
-      ${dot(o.id)}<span style="font-size:12px;font-weight:700;min-width:90px">${o.name}</span>
-      <div style="flex:1">${kpiPb(a)}</div>
-      <span style="font-size:10px;color:var(--t3);min-width:28px">${items.length}건</span>
+    const allItems = milestones.filter(m=>m.orgId===o.id);
+    const moItems  = milestones.filter(m=>m.orgId===o.id && m.month===nowMonth);
+    if(!allItems.length) return;
+    const allAvg = Math.round(allItems.reduce((s,m)=>s+m.prog,0)/allItems.length);
+    const moAvg  = moItems.length ? Math.round(moItems.reduce((s,m)=>s+m.prog,0)/moItems.length) : 0;
+    const moDone = moItems.filter(m=>m.status==='완료').length;
+    const moTotal= moItems.length;
+    const moColor = moAvg >= 70 ? 'var(--green)' : moAvg >= 30 ? 'var(--yellow)' : '#ef4444';
+    oh+=`<div style="display:grid;grid-template-columns:100px 1fr 110px 110px;gap:6px;align-items:center;padding:10px 0;border-bottom:1px solid var(--bd)">
+      <span style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700">${dot(o.id)}${o.name}</span>
+      <div style="display:flex;align-items:center;gap:8px">
+        ${kpiPb(allAvg)}
+        <span style="font-size:10px;color:var(--t3);white-space:nowrap">${allItems.length}건</span>
+      </div>
+      <div style="text-align:center">
+        <span style="font-size:18px;font-weight:900;color:${moColor}">${moAvg}%</span>
+        <div style="font-size:9px;color:var(--t3);margin-top:1px">이번달 평균</div>
+      </div>
+      <div style="text-align:center">
+        <span style="font-size:16px;font-weight:800;color:var(--navy)">${moDone}<span style="font-size:11px;color:var(--t3)">/${moTotal}</span></span>
+        <div style="font-size:9px;color:var(--t3);margin-top:1px">완료/전체</div>
+      </div>
     </div>`;
   });
   document.getElementById('db-org').innerHTML=oh||'<div class="empty"><div class="empty-ico">📦</div>데이터 없음</div>';
@@ -2484,7 +2503,6 @@ function rwBuildForm(key) {
   addRow('w-yest',3); addRow('w-tod',3); addRow('w-tom',3);
 
   // ── 전일 보고 자동 불러오기 ──
-/*
   var yesterday = new Date();
   yesterday.setDate(yesterday.getDate()-1);
   var ydate = yesterday.getFullYear()+'-'
@@ -2493,25 +2511,6 @@ function rwBuildForm(key) {
   var prevReport = allReports
     .filter(function(r){ return r.personName===p.personName && r.date===ydate; })
     .sort(function(a,b){ return (b.id||0)-(a.id||0); })[0];
-*/
-
-var currentInputDate = document.getElementById('f-date') ? document.getElementById('f-date').value : kpiToday();
-
-// 해당 사용자의 보고서 중, 선택된 날짜보다 이전인 것들 중 가장 최신 데이터를 찾음
-var prevReport = allReports
-  .filter(function(r) { 
-    return r.personName === p.personName && r.date < currentInputDate; 
-  })
-  .sort(function(a, b) { 
-    // 날짜 내림차순 정렬 (최신순)
-    return b.date.localeCompare(a.date); 
-  })[0];
-
-// 안내 메시지 날짜 표시용 변수 (prevReport가 있을 경우에만 사용)
-var ydate = prevReport ? prevReport.date : '';
-
-
-
   // ── 내일 연차 자동 표시 ──
   var tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate()+1);
