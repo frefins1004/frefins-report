@@ -1667,6 +1667,26 @@
 <div class="mod" style="width:860px;max-height:90vh"><div class="mod-hd"><div class="mod-title" id="rd-title">일일 보고서</div><button class="mod-x" onclick="closeMo('rd-mo')">✕</button></div>
 <div class="mod-b" id="rd-body"></div></div></div>
 
+<!-- PIN 확인 모달 -->
+<div class="mo" id="rpt-pin-mo" onclick="if(event.target.id==='rpt-pin-mo')closeMo('rpt-pin-mo')">
+<div class="mod" style="width:360px">
+  <div class="mod-hd"><div class="mod-title" id="rpt-pin-mo-title">PIN 확인</div><button class="mod-x" onclick="closeMo('rpt-pin-mo')">✕</button></div>
+  <div class="mod-b" style="padding:24px">
+    <div style="font-size:13px;color:var(--t2);margin-bottom:16px" id="rpt-pin-mo-desc"></div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <label style="font-size:12px;font-weight:700;color:var(--t3)">🔐 보고서 제출 시 설정한 PIN 4자리</label>
+      <input type="password" id="rpt-pin-input" maxlength="4" inputmode="numeric" pattern="[0-9]*" placeholder="●●●●"
+        style="width:100%;text-align:center;font-size:22px;letter-spacing:10px;border:2px solid #e2dedd;border-radius:10px;padding:10px;background:#fafafa"
+        oninput="this.value=this.value.replace(/[^0-9]/g,'')" onkeydown="if(event.key==='Enter')rptPinConfirm()" />
+    </div>
+    <div style="display:flex;gap:8px;margin-top:20px;justify-content:flex-end">
+      <button class="btn btn-o" onclick="closeMo('rpt-pin-mo')">취소</button>
+      <button class="btn btn-p" id="rpt-pin-confirm-btn" onclick="rptPinConfirm()">확인</button>
+    </div>
+  </div>
+</div>
+</div>
+
 <div class="mo" id="sf-group-mo" onclick="if(event.target.id==='sf-group-mo')closeMo('sf-group-mo')">
 <div class="mod" style="width:420px"><div class="mod-hd"><div class="mod-title" id="sf-group-mo-title">그룹 추가</div><button class="mod-x" onclick="closeMo('sf-group-mo')">✕</button></div>
 <div class="mod-b">
@@ -1975,7 +1995,7 @@ var SORGS = [
   {id:'rx',        name:'RX팀',               group:'RX그룹',             color:'#047857', members:[{name:'안소진',role:'팀장'}]},
   {id:'franchise', name:'프랜차이즈&플랫폼팀', group:'RX그룹',             color:'#047857', members:[{name:'김수아',role:'팀장'}]},
   {id:'finance',   name:'금융제휴팀',          group:'RX그룹',             color:'#047857', members:[{name:'(채용예정)',role:'팀장'}]},
-  {id:'mkt',       name:'Marketing팀',         group:'운영그룹',            color:'#b45309', members:[{name:'김효민',role:'팀장'},{name:'이자연',role:'PM'}]},
+  {id:'mkt',       name:'Marketing팀',         group:'운영그룹',            color:'#b45309', members:[{name:'김효민',role:'팀장'},{name:'이자연',role:'PM'},{name:'최다혜',role:'PM'}]},
   {id:'ops',       name:'Operation팀',         group:'운영그룹',            color:'#b45309', members:[{name:'유소미',role:'PM'}]},
   {id:'uiux',      name:'UI/UX팀',            group:'R&D그룹',            color:'#1d4ed8', members:[{name:'김태준',role:'팀장'},{name:'임한솔',role:'PM'}]},
   {id:'infra',     name:'INFRA팀',            group:'R&D그룹',            color:'#1d4ed8', members:[{name:'엄진혁',role:'PM'}]},
@@ -2494,7 +2514,12 @@ function rwBuildForm(key) {
     h += '</div></div>';
   }
 
-  h += '<div style="display:flex;justify-content:flex-end;gap:10px;margin-bottom:30px">';
+  h += '<div style="display:flex;align-items:center;justify-content:flex-end;gap:12px;margin-bottom:30px;flex-wrap:wrap">';
+  h += '<div style="display:flex;align-items:center;gap:8px;background:#f4f2f0;border:1px solid #e2dedd;border-radius:10px;padding:8px 14px">';
+  h += '<span style="font-size:12px;font-weight:700;color:var(--t2);white-space:nowrap">🔐 수정/삭제용 PIN</span>';
+  h += '<input type="password" id="f-pin" maxlength="4" inputmode="numeric" pattern="[0-9]*" placeholder="4자리" style="width:72px;text-align:center;font-size:15px;font-weight:700;letter-spacing:6px;border:1px solid #ccc;border-radius:7px;padding:5px 8px;background:#fff" oninput="this.value=this.value.replace(/[^0-9]/g,\'\')" />';
+  h += '<span style="font-size:10px;color:var(--t3)">나중에 수정·삭제 시 필요</span>';
+  h += '</div>';
   h += '<button class="btn btn-o" onclick="rwReset()">초기화</button>';
   h += '<button class="btn btn-p" style="padding:11px 28px;font-size:13px" onclick="rwSave()">📤 보고서 제출</button>';
   h += '</div>';
@@ -2662,6 +2687,8 @@ function rwSave() {
   if(!p){alert('보고자를 선택해주세요');return;}
   var sum = document.getElementById('f-sum').value.trim();
   if(!sum){alert('핵심 성과를 입력해주세요');return;}
+  var pinVal = (document.getElementById('f-pin')||{value:''}).value.trim();
+  if(!pinVal || pinVal.length !== 4){alert('수정/삭제용 PIN 4자리를 입력해주세요');return;}
 
   var r = {
     id: Date.now(),
@@ -2683,11 +2710,12 @@ function rwSave() {
     issues:    getRowData('w-iss', ['cat','content','resp']),
     msRefs:    p.isExec ? getRowData('w-ms',  ['proj','ms','due','prog','stat','risk']) : [],
     partners:  p.isExec ? getRowData('w-ptr', ['company','person','content','result'])  : [],
+    pin: pinVal,
   };
   allReports.push(r);
   fbSaveReport(r);
   document.getElementById('nb-rpt').textContent = allReports.length;
-  alert('보고서가 제출되었습니다!\n'+p.personName+' '+p.role);
+  alert('보고서가 제출되었습니다!\n'+p.personName+' '+p.role+'\n\n🔐 PIN을 꼭 기억해두세요!');
   rwReset();
 }
 
@@ -2809,7 +2837,7 @@ function renderHist() {
   document.getElementById('rh-cnt').textContent=d.length+'건';
   var el=document.getElementById('rh-list');
   if(!d.length){el.innerHTML='<div class="empty"><div class="empty-ico">&#128193;</div><div>보고서가 없습니다</div></div>';return;}
-  var h='<table class="tbl"><thead><tr><th>날짜</th><th>그룹</th><th>소속</th><th>이름</th><th>직책</th><th style="text-align:center">구분</th><th style="text-align:center">근무</th><th>핵심 성과</th><th style="text-align:center">보기</th></tr></thead><tbody>';
+  var h='<table class="tbl"><thead><tr><th>날짜</th><th>그룹</th><th>소속</th><th>이름</th><th>직책</th><th style="text-align:center">구분</th><th style="text-align:center">근무</th><th>핵심 성과</th><th style="text-align:center">보기</th><th style="text-align:center">관리</th></tr></thead><tbody>';
   d.forEach(function(r){
     var col=r.color||'#94a3b8';
     h+='<tr>';
@@ -2822,10 +2850,117 @@ function renderHist() {
     h+='<td style="text-align:center"><span class="tag '+(r.worktype==='내근'?'tb':'ty')+'">'+r.worktype+'</span></td>';
     h+='<td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px">'+r.summary+'</td>';
     h+='<td style="text-align:center"><button class="btn btn-o btn-sm" onclick="viewReport('+r.id+')">보기</button></td>';
+    h+='<td style="text-align:center"><div style="display:flex;gap:4px;justify-content:center">';
+    h+='<button class="btn btn-sm" style="background:#fff7ed;color:#b45309;border:1px solid #fed7aa;font-size:11px" onclick="rptEditPin('+r.id+')">수정</button>';
+    h+='<button class="btn btn-sm" style="background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;font-size:11px" onclick="rptDeletePin('+r.id+')">삭제</button>';
+    h+='</div></td>';
     h+='</tr>';
   });
   h+='</tbody></table>';
   el.innerHTML=h;
+}
+
+// ══════════════════════════════════════
+//  보고서 수정 / 삭제 (PIN 확인)
+// ══════════════════════════════════════
+var rptPinMode = null;  // 'edit' | 'delete'
+var rptPinTargetId = null;
+
+function rptEditPin(id) {
+  var r = allReports.find(function(x){return x.id===id;});
+  if(!r) return;
+  if(!r.pin) { alert('이 보고서는 PIN이 설정되지 않아 수정할 수 없습니다.\n(PIN 기능 도입 이전에 제출된 보고서)'); return; }
+  rptPinMode = 'edit';
+  rptPinTargetId = id;
+  document.getElementById('rpt-pin-mo-title').textContent = '보고서 수정';
+  document.getElementById('rpt-pin-mo-desc').textContent = r.personName + ' ' + r.role + ' — ' + r.date + ' 보고서를 수정합니다.';
+  document.getElementById('rpt-pin-input').value = '';
+  document.getElementById('rpt-pin-confirm-btn').textContent = '수정 진행';
+  document.getElementById('rpt-pin-mo').classList.add('on');
+  setTimeout(function(){ document.getElementById('rpt-pin-input').focus(); }, 200);
+}
+
+function rptDeletePin(id) {
+  var r = allReports.find(function(x){return x.id===id;});
+  if(!r) return;
+  if(!r.pin) { alert('이 보고서는 PIN이 설정되지 않아 삭제할 수 없습니다.\n(PIN 기능 도입 이전에 제출된 보고서)'); return; }
+  rptPinMode = 'delete';
+  rptPinTargetId = id;
+  document.getElementById('rpt-pin-mo-title').textContent = '보고서 삭제';
+  document.getElementById('rpt-pin-mo-desc').textContent = r.personName + ' ' + r.role + ' — ' + r.date + ' 보고서를 삭제합니다.';
+  document.getElementById('rpt-pin-input').value = '';
+  document.getElementById('rpt-pin-confirm-btn').textContent = '삭제 확인';
+  document.getElementById('rpt-pin-confirm-btn').style.background = '#b91c1c';
+  document.getElementById('rpt-pin-mo').classList.add('on');
+  setTimeout(function(){ document.getElementById('rpt-pin-input').focus(); }, 200);
+}
+
+function rptPinConfirm() {
+  var entered = document.getElementById('rpt-pin-input').value.trim();
+  var r = allReports.find(function(x){return x.id===rptPinTargetId;});
+  if(!r) { closeMo('rpt-pin-mo'); return; }
+  if(entered !== r.pin) { alert('PIN이 일치하지 않습니다.'); document.getElementById('rpt-pin-input').value=''; document.getElementById('rpt-pin-input').focus(); return; }
+  closeMo('rpt-pin-mo');
+  if(rptPinMode === 'delete') {
+    if(!confirm(r.personName + ' ' + r.role + ' — ' + r.date + ' 보고서를 정말 삭제하시겠습니까?')) return;
+    // Firebase 삭제
+    if(r._key) DB.reports.child(r._key).remove();
+    allReports = allReports.filter(function(x){return x.id !== rptPinTargetId;});
+    document.getElementById('nb-rpt').textContent = allReports.length;
+    renderHist();
+    alert('보고서가 삭제되었습니다.');
+  } else if(rptPinMode === 'edit') {
+    // 편집 모달 열기
+    rptOpenEditModal(r);
+  }
+  rptPinMode = null; rptPinTargetId = null;
+}
+
+function rptOpenEditModal(r) {
+  var mo = document.getElementById('rd-mo');
+  var title = document.getElementById('rd-title');
+  var body = document.getElementById('rd-body');
+  title.textContent = r.personName + ' ' + r.role + ' — ' + r.date + ' 보고서 수정';
+  var c = r.color || '#94a3b8';
+  var h = '<div style="padding:16px;display:flex;flex-direction:column;gap:14px">';
+  h += '<div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:10px 14px;font-size:12px;color:#92400e">✏️ 수정 후 <b>저장</b> 버튼을 눌러주세요. 수정 내용은 즉시 반영됩니다.</div>';
+  h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">';
+  h += '<div><label style="font-size:11px;font-weight:700;color:var(--t3)">근무 형태</label>';
+  h += '<select id="edit-worktype" class="fi" style="margin-top:4px"><option value="내근"'+(r.worktype==='내근'?' selected':'')+'>내근</option><option value="재택"'+(r.worktype==='재택'?' selected':'')+'>재택</option><option value="외근"'+(r.worktype==='외근'?' selected':'')+'>외근</option><option value="출장"'+(r.worktype==='출장'?' selected':'')+'>출장</option></select></div>';
+  h += '<div><label style="font-size:11px;font-weight:700;color:var(--t3)">근무 시간 (기본)</label>';
+  h += '<input class="fi" id="edit-workBasic" style="margin-top:4px" value="'+Q(r.workBasic||'')+'" /></div>';
+  h += '</div>';
+  h += '<div><label style="font-size:11px;font-weight:700;color:var(--t3)">핵심 성과 *</label>';
+  h += '<textarea class="ft sh" id="edit-sum" style="margin-top:4px">'+Q(r.summary||'')+'</textarea></div>';
+  h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">';
+  h += '<div><label style="font-size:11px;font-weight:700;color:var(--t3)">주요 리스크</label>';
+  h += '<textarea class="ft sh" id="edit-risk" style="margin-top:4px">'+Q(r.risk||'')+'</textarea></div>';
+  h += '<div><label style="font-size:11px;font-weight:700;color:var(--t3)">의사결정 필요 사항</label>';
+  h += '<textarea class="ft sh" id="edit-dec" style="margin-top:4px">'+Q(r.decision||'')+'</textarea></div>';
+  h += '</div>';
+  h += '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">';
+  h += '<button class="btn btn-o" onclick="closeMo('rd-mo')">취소</button>';
+  h += '<button class="btn btn-p" onclick="rptSaveEdit('+r.id+')">💾 저장</button>';
+  h += '</div></div>';
+  body.innerHTML = h;
+  mo.classList.add('on');
+}
+
+function rptSaveEdit(id) {
+  var r = allReports.find(function(x){return x.id===id;});
+  if(!r) return;
+  var sum = document.getElementById('edit-sum').value.trim();
+  if(!sum){ alert('핵심 성과를 입력해주세요'); return; }
+  r.worktype  = document.getElementById('edit-worktype').value;
+  r.workBasic = document.getElementById('edit-workBasic').value;
+  r.summary   = sum;
+  r.risk      = document.getElementById('edit-risk').value;
+  r.decision  = document.getElementById('edit-dec').value;
+  // Firebase 업데이트
+  if(r._key) DB.reports.child(r._key).set(r);
+  closeMo('rd-mo');
+  renderHist();
+  alert('보고서가 수정되었습니다.');
 }
 
 // ══════════════════════════════════════
